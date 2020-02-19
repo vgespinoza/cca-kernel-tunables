@@ -14,3 +14,12 @@
           reload: yes
           sysctl_file: "/etc/sysctl.d/99-cca-enforcement.conf"
         with_items: "{{ kernel_parameters }}"
+        notify: Report change
+
+    handlers:
+      - name:  Report change   
+        uri:
+          url: https://your.jira.example.com/rest/api/2/issue/
+          method: POST
+          body: "{ "message": {"hostname":"teste","param":"testep","value":"valor"} }"
+          body_format: json
