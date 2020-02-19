@@ -1,7 +1,16 @@
 ---
   - name: Applying kernel settings 
     hosts: all
+    gather_facts: false
     tasks:
       - include_vars: kernel-tunables.yml
 
-      - debug: msg="Hello, {{ kernel-parameters }}!"
+      - name: Configuring kernel parameters
+        sysctl:
+          name: "{{ item.param }}"
+          value: "{{ item.value }}"
+          sysctl_set: yes
+          state: present
+          reload: yes
+          sysctl_file: "/etc/sysctl.d/99-cca-enforcement.conf"
+        with_items: "{{ kernel_parameters }}"

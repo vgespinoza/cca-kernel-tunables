@@ -1,6 +1,6 @@
 ---
 
-  kernel-parameters:
+  kernel_parameters:
     - name: Swappiness
       param: "vm.swappiness"
       value: 34
