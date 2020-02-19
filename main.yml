@@ -1,1 +1,7 @@
 ---
+- name: Applying kernel settings 
+- hosts: all
+  tasks:
+    - include_vars: kernel-tunables.yml
+
+    - debug: msg="Hello, {{ kernel-parameters }}!"

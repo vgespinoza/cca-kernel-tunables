@@ -1,0 +1,9 @@
+---
+
+  kernel-parameters:
+    - name: Swappiness
+      param: "vm.swappiness"
+      value: 34
+    - name: Mem_min_free
+      param: "vm.min_free_kbytes"
+      value: 85777
