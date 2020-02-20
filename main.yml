@@ -19,7 +19,10 @@
     handlers:
       - name:  Report change   
         uri:
-          url: https://your.jira.example.com/rest/api/2/issue/
+          url: http://localhost:9221/
           method: POST
-          body: "{ "message": {"hostname":"teste","param":"testep","value":"valor"} }"
+          body: "{ \"message\": {\"hostname\": \"teste\", \"param\": \"testep\", \"value\": \"valor\"} }"
+          validate_certs: no
+          headers: {'content-type': 'application/json'}
+          status: 201
           body_format: json
