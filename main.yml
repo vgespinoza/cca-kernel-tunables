@@ -1,28 +1,43 @@
 ---
-  - name: Applying kernel settings 
-    hosts: all
-    gather_facts: false
-    tasks:
-      - include_vars: kernel-tunables.yml
+- name: Applying kernel settings
+  hosts: all
+  gather_facts: no
+  vars:
+    kernel_fact: []
 
-      - name: Configuring kernel parameters
-        sysctl:
-          name: "{{ item.param }}"
-          value: "{{ item.value }}"
-          sysctl_set: yes
-          state: present
-          reload: yes
-          sysctl_file: "/etc/sysctl.d/99-cca-enforcement.conf"
-        with_items: "{{ kernel_parameters }}"
-        notify: Report change
+  pre_tasks:
+    - setup:
+        gather_subset: 'min'
 
-    handlers:
-      - name:  Report change   
-        uri:
-          url: http://localhost:9221/
-          method: POST
-          body: "{ \"message\": {\"hostname\": \"teste\", \"param\": \"testep\", \"value\": \"valor\"} }"
-          validate_certs: no
-          headers: {'content-type': 'application/json'}
-          status: 201
-          body_format: json
+  tasks:
+    - include_vars: kernel-tunables.yml
+
+    - name: Configuring kernel parameters
+      sysctl:
+        name: "{{ item.param }}"
+        value: "{{ item.value }}"
+        sysctl_set: yes
+        reload: no
+        state: present
+        sysctl_file: "/etc/sysctl.d/99-cca-enforcement.conf"
+      with_items: "{{ kernel_parameters }}"
+      register: param_result
+      notify: Report change
+
+    - name: Query json
+      set_fact:
+        kernel_fact: "{{ kernel_fact + [item.item] }}"
+      when: "{{ item.changed }}"
+      with_items: "{{ param_result.results }}"
+
+  handlers:
+    - name:  Report change
+      uri:
+        url: http://localhost:9220/
+        method: POST
+        body: "{ \"message\": {\"hostname\": \"{{ ansible_facts['nodename'] }}\", \"param\": \"{{ item.param }}\", \"value\": \"{{ item.value }}\"} }"
+        validate_certs: no
+        headers: {'content-type': 'application/json'}
+        body_format: json
+      with_items: "{{ kernel_fact }}"
+...
